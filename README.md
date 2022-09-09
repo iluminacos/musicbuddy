@@ -23,8 +23,9 @@ Execute `musicbuddy.pi` with the following options:
 		-i [directory]        Where to look for mp3 files
 		-t [directory]        Where the images will be downloaded
 		Options:
+		--no-overwrite        Check whether there's already viable images before downloading more
 		--no-artist           Don't give default artist names to songs without artists
-		--default [name]      Change the default artist name for songs without an artist. 
+		--default [name]      Change the default artist name for songs without an artist
 		                      By default it's "Misc. Artist"
 		--no-album            If no album name is specified, the album name field will 
 		                      remain empty instead of being filled with the artist name by default

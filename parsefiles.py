@@ -46,6 +46,7 @@ def handle_images(path_mp3, path_image, default_artist, remove):
 			except: {}
 		
 		#The "rb" option stands for "read, binary"
+		#eyed3 should be compatible with other image formats 
 		filename = os.path.abspath(path_image)+'\\'+artist+'.png'
 		try:
 			image = open(filename, "rb").read()
@@ -59,8 +60,6 @@ def handle_images(path_mp3, path_image, default_artist, remove):
 		'''
 		if filename[-4:] == '.png':
 			file.tag.images.set(3, image, 'image/png')
-		elif filename[-4:] == '.jpg':
-			file.tag.images.set(3, image, 'image/jpg')
 		else:
 			print("File format for ",filename," is not compatible. Please use either PNG or JPG",sep='')
 		file.tag.save()
