@@ -14,6 +14,7 @@ default_artist_flag = 1
 default_album_flag = 1
 remove = 0
 rename = 1
+overwrite = 1
 
 def print_help():
 		print("Unless actions are specified, the script will perform all actions in sequence in the current directory.")
@@ -28,6 +29,7 @@ def print_help():
 		print("-i [directory]\t\tWhere to look for mp3 files")
 		print("-t [directory]\t\tWhere the images will be downloaded")
 		print("Options:")
+		print("--no-overwrite\t\tCheck whether there's already viable images before downloading more")
 		print("--no-artist\t\tDon't give default artist names to songs without artists")
 		print("--default [name]\tChange the default artist name for songs without an artist. By default, it's \"Misc. Artist\"")
 		print("--no-album\t\tThe album name field will remain empty instead of being filled with the artist name by default")
@@ -69,6 +71,8 @@ if __name__ == '__main__':
 				print("Directory not specified for -t")
 		elif arg=='--no-artist':
 			default_artist_flag = 0
+		elif arg=='--no-overwrite':
+			overwrite = 0
 		elif arg=='--default':
 			n=n+1
 			try:
@@ -98,16 +102,19 @@ if __name__ == '__main__':
 		for n in range(0,len(artist_list)):
 			print(str(artist_list[n]) + ': ' + str(artist_value[n]))
 			
-	#TODO: Check image folder beforehand, only download images we don't already have. Add an option to download and overwrite
-	#TODO: Add an option to only download images after X name, for cases when a previous execution fails midway through
 	#Download images 
 	if actions[1]:
 		#Set up folder to download images
 		if not os.path.exists(path_image):
 			os.makedirs(path_image)
+		#Don't download new images if there's already valid ones
+		elif not overwrite:
+			for image in os.listdir(path_image):
+				try: artist_list.remove(image[:-4])
+				except: {}
 		#Mixing / and \ works, at least in python windows
 		if path_image[-1]!='\\': path_image += '\\'
-		autoimgloader.download_batch(artist_list, path_image, extra)
+		if len(artist_list) > 0: autoimgloader.download_batch(artist_list, path_image, extra)
 		
 	#Apply downloaded images as album art tags
 	if actions[2]:
