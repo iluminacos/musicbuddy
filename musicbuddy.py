@@ -15,6 +15,7 @@ default_album_flag = 1
 remove = 0
 rename = 1
 overwrite = 1
+keyword = []
 
 def print_help():
 		print("Unless actions are specified, the script will perform all actions in sequence in the current directory.")
@@ -36,6 +37,8 @@ def print_help():
 		print("--extra [name]\t\tAdd text to queries with no album name to get more suitable results, e.g. \"latest album\"")
 		print("-r, --remove\t\tRemove downloaded images after adding them as a tag")
 		print("--no-rename\t\tDon't rename files after changing their metadata")
+		print("--keyword [name]\tParse filename for special phrases to add to album name, e.g. \"OST\", \"Live concert\"")
+		print("\t\t\tCan be used multiple times to look for different key phrases")
 		sys.exit(0)
 
 if __name__ == '__main__':
@@ -79,6 +82,12 @@ if __name__ == '__main__':
 				default_artist = sys.argv[n]
 			except:
 				print("Name not specified for --default")
+		elif arg=='--keyword':
+			n=n+1
+			try:
+				keyword.append(sys.argv[n])
+			except:
+				print("Name not specified for --keyword")
 		elif arg=='--no-album':
 			default_album_flag = 0
 		elif arg=='--extra':
@@ -98,7 +107,7 @@ if __name__ == '__main__':
 	
 	#Get and list valid mp3 files
 	if actions[0]:
-		artist_list, artist_value = parsefiles.list(path_mp3, default_artist)
+		artist_list, artist_value = parsefiles.list(path_mp3, default_artist, key_phrase=keyword)
 		for n in range(0,len(artist_list)):
 			print(str(artist_list[n]) + ': ' + str(artist_value[n]))
 			
@@ -118,9 +127,9 @@ if __name__ == '__main__':
 		
 	#Apply downloaded images as album art tags
 	if actions[2]:
-		parsefiles.handle_images(path_mp3, path_image, default_artist, remove)
+		parsefiles.handle_images(path_mp3, path_image, default_artist, remove, key_phrase=keyword)
 		
 	#Fix metadata and filename
 	if actions[3]:
-		parsefiles.handle_tags(path_mp3, default_artist, default_artist_flag, default_album_flag, rename_flag=rename)
+		parsefiles.handle_tags(path_mp3, default_artist, default_artist_flag, default_album_flag, rename_flag=rename, key_phrase=keyword)
 		

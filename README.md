@@ -11,28 +11,30 @@ This is done in four steps, which can be done independently:
 This project uses `eyed3` to interact with mp3 metadata, and both `selenium` and `chromedriver_autoinstaller` to handle browser transactions, so be sure to have these packages installed and up to date.  
 Execute `musicbuddy.pi` with the following options:
 
-		Unless actions are specified, the script will perform all actions in sequence in the current directory
-		Help:
-		-h, --help            Show this message, then cease execution
-		Actions:
-		-l, --list            List found artists and albums
-		-d, --download        Download images based on found artist and album names
-		-a, --art             Fix the Album Art tag
-		-m, --meta            Fix the Song Title, Artist, Album Name tags, and filename
-		Directories:
-		-i [directory]        Where to look for mp3 files
-		-t [directory]        Where the images will be downloaded
-		Options:
-		--no-overwrite        Check whether there's already viable images before downloading more
-		--no-artist           Don't give default artist names to songs without artists
-		--default [name]      Change the default artist name for songs without an artist
-		                      By default it's "Misc. Artist"
-		--no-album            If no album name is specified, the album name field will 
-		                      remain empty instead of being filled with the artist name by default
-		--extra [name]        Add text to queries with no album name to get more suitable results 
-		                      e.g. "latest album" or "live concert"
-		-r, --remove          Remove downloaded images after adding them as a tag
-		--no-rename           Don't rename files after changing their metadata
+    Unless actions are specified, the script will perform all actions in sequence in the current directory
+	Help:
+	-h, --help            Show this message, then cease execution
+	Actions:
+	-l, --list            List found artists and albums
+	-d, --download        Download images based on found artist and album names
+	-a, --art             Fix the Album Art tag
+	-m, --meta            Fix the Song Title, Artist, Album Name tags, and filename
+	Directories:
+	-i [directory]        Where to look for mp3 files
+	-t [directory]        Where the images will be downloaded
+	Options:
+	--no-overwrite        Check whether there's already viable images before downloading more
+	--no-artist           Don't give default artist names to songs without artists
+	--default [name]      Change the default artist name for songs without an artist
+		                  By default it's "Misc. Artist"
+	--no-album            If no album name is specified, the album name field will 
+	                      remain empty instead of being filled with the artist name by default
+	--extra [name]        Add text to queries with no album name to get more suitable results 
+	                      e.g. "latest album" or "live concert"
+	-r, --remove          Remove downloaded images after adding them as a tag
+	--no-rename           Don't rename files after changing their metadata
+	--keyword [name]      Parse filename for keywords to add to album name, e.g. "OST", "Live concert"  
+                          Can be used multiple times to look for different key phrases
 		
 The script will work if files are formatted like this: [Artist - ]Song name[#Album].mp3  
 If you want to use a different nomenclature then change the function `split_filename()` in `parsefiles.py`  

@@ -2,18 +2,33 @@ import os, sys
 import eyed3
 
 #Extracts informations from filename. Filename format should be "[Artist - ]Song Title[#Album]". Content between brackets is optional
-def split_filename(filename):
+def split_filename(filename, keywords):
 	
 	artist = None
 	album = None
-
+	add_key = []
+	
+	#Check for special keywords to then be added to the album name
+	for key in keywords:
+		filename = filename.split(key)
+		if len(filename)>1:
+			add_key.append(key)
+			filename = ''.join(filename)
+		else:
+			#Split returns a one item list, we want to fetch the string within
+			filename = filename[0]
+	
+	add_key = ' '.join(add_key)
+	
 	#Special character to split regular filename and the album name
+	#The [0:-4] is to ignore ".mp3" . Would need an adjustment if support for other file formats is added
 	parse = filename[0:-4].split('#')
 	if len(parse)>1:
-		#Join album and artist name and process it as a singular artist
-		#Names are processed separately when handling metadata tags
-		album = parse[1]
+		album = parse[1].strip() + ' ' + add_key
+	#If there's no album BUT there are keywords, keywords are used as the entire album name
+	elif add_key != '': album = add_key
 	
+	#Special character to split artist and song name
 	names = parse[0].split(' - ')
 	if len(names)>1: 
 		title = names[1]
@@ -21,10 +36,28 @@ def split_filename(filename):
 	else:
 		title = names[0]
 	
+	#Remove front and back whitespaces
+	if title!=None: title = title.strip()
+	if artist!=None: artist = artist.strip()
+	if album!=None: album = album.strip()
+	
 	return title, artist, album
+		
+#Define the specific combination of artist, album name, and keywords to look up images
+def gen_artist(artist, album, default_artist):
+	
+	#Songs without an artist. A name is necessary to fetch images
+	if artist == None:
+		artist = default_artist
+	#For named artists, add the name of the album, if any
+	else: 
+		try: artist = artist + ' ' + album
+		except: {}
+		
+	return artist
 
 #Add a collection of images as metadata tags to mp3 files, according to their filename
-def handle_images(path_mp3, path_image, default_artist, remove):
+def handle_images(path_mp3, path_image, default_artist, remove, key_phrase = None):
 	try:
 		list = os.listdir(path_mp3)
 	except:
@@ -35,15 +68,11 @@ def handle_images(path_mp3, path_image, default_artist, remove):
 	
 	for item in list:
 		if item[-4:] != ".mp3": continue
-		_, artist, album = split_filename(item)
+		_, artist, album = split_filename(item, key_phrase)
 		file = eyed3.load(path_mp3+'\\'+item)
 		
 		#Adjust info obtained from filename to fecth correct file
-		if artist == None:
-			artist = default_artist
-		else:
-			try: artist = artist + ' - ' + album
-			except: {}
+		artist = gen_artist(artist, album, default_artist)
 		
 		#The "rb" option stands for "read, binary"
 		#eyed3 should be compatible with other image formats 
@@ -78,7 +107,7 @@ def handle_images(path_mp3, path_image, default_artist, remove):
 		
 #Change the metadata and filename of all given mp3 files in a directory, according to their filename 
 #If you're confused about the control flags, consult the print_help function in musicbuddy.py
-def handle_tags(path, default_artist, artist_flag, album_flag, rename_flag=1):
+def handle_tags(path, default_artist, artist_flag, album_flag, rename_flag=1, key_phrase=None):
 	try:
 		list = os.listdir(path)
 		last_dir = os.getcwd()
@@ -91,7 +120,7 @@ def handle_tags(path, default_artist, artist_flag, album_flag, rename_flag=1):
 		if item[-4:] != ".mp3": continue
 		file = eyed3.load(item)
 		
-		title, artist, album = split_filename(item)
+		title, artist, album = split_filename(item, key_phrase)
 		
 		file.tag.title = title
 		
@@ -115,7 +144,7 @@ def handle_tags(path, default_artist, artist_flag, album_flag, rename_flag=1):
 
 #TODO: Add an option to have certain keywords (Like 'OST') be considered albums
 #Return a list of all found artist names in given path and the number of files with said name
-def list(path, default_name):
+def list(path, default_artist, key_phrase=None):
 	try:
 		list = os.listdir(path)
 	except:
@@ -129,15 +158,10 @@ def list(path, default_name):
 
 	for item in list:
 		if item[-4:] != ".mp3": continue
-		title, artist, album = split_filename(item)
+		title, artist, album = split_filename(item, key_phrase)
 		
-		#Songs without an artist
-		if artist == None:
-			artist = default_name
-		#For named artists, add the name of the album, if any
-		else: 
-			try: artist = artist + ' - ' + album
-			except: {}
+		#Adjust info obtained from filename to look up relevant information
+		artist = gen_artist(artist, album, default_artist)
 			
 		#Update artists already in the list
 		try:
