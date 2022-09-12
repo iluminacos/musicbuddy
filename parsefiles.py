@@ -142,7 +142,6 @@ def handle_tags(path, default_artist, artist_flag, album_flag, rename_flag=1, ke
 	
 	os.chdir(last_dir)
 
-#TODO: Add an option to have certain keywords (Like 'OST') be considered albums
 #Return a list of all found artist names in given path and the number of files with said name
 def list(path, default_artist, key_phrase=None):
 	try:
