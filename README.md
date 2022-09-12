@@ -26,7 +26,7 @@ Execute `musicbuddy.pi` with the following options:
 	--no-overwrite        Check whether there's already viable images before downloading more
 	--no-artist           Don't give default artist names to songs without artists
 	--default [name]      Change the default artist name for songs without an artist
-		                  By default it's "Misc. Artist"
+		              By default it's "Misc. Artist"
 	--no-album            If no album name is specified, the album name field will 
 	                      remain empty instead of being filled with the artist name by default
 	--extra [name]        Add text to queries with no album name to get more suitable results 
