@@ -23,7 +23,7 @@ Execute `musicbuddy.pi` with the following options:
 	-i [directory]        Where to look for mp3 files
 	-t [directory]        Where the images will be downloaded
 	Options:
-	--overwrite        Download images for all artists without checking if there's already viable ones
+	--overwrite           Download images for all artists without checking if there's already viable ones
 	--no-artist           Don't give default artist names to songs without artists
 	--default [name]      Change the default artist name for songs without an artist
 		              By default it's "Misc. Artist"
@@ -31,7 +31,7 @@ Execute `musicbuddy.pi` with the following options:
 	                      remain empty instead of being filled with the artist name by default
 	--extra [name]        Add text to queries with no album name to get more suitable results 
 	                      e.g. "latest album" or "live concert"
-	-r, --no-remove          Don't delete downloaded images after using them
+	-r, --no-remove       Don't delete downloaded images after using them
 	--no-rename           Don't rename files after changing their metadata
 	--keyword [name]      Parse filename for keywords to add to album name, e.g. "OST", "Live concert"  
                           Can be used multiple times to look for different key phrases
