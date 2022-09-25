@@ -13,9 +13,9 @@ actions = [0,0,0,0]
 print_flag = 0
 default_artist_flag = 1
 default_album_flag = 1
-remove = 0
+remove = 1
 rename = 1
-overwrite = 1
+overwrite = 0
 keyword = []
 
 def print_help():
@@ -31,12 +31,12 @@ def print_help():
 		print("-i [directory]\t\tWhere to look for mp3 files")
 		print("-t [directory]\t\tWhere the images will be downloaded")
 		print("Options:")
-		print("--no-overwrite\t\tCheck whether there's already viable images before downloading more")
+		print("--overwrite\t\tDownload images for all artists without checking if there's already viable ones")
 		print("--no-artist\t\tDon't give default artist names to songs without artists")
 		print("--default [name]\tChange the default artist name for songs without an artist. By default, it's \"Misc. Artist\"")
 		print("--no-album\t\tThe album name field will remain empty instead of being filled with the artist name by default")
 		print("--extra [name]\t\tAdd text to queries with no album name to get more suitable results, e.g. \"latest album\"")
-		print("-r, --remove\t\tRemove downloaded images after adding them as a tag")
+		print("-r, --no-remove\t\tDon't delete downloaded images after using them")
 		print("--no-rename\t\tDon't rename files after changing their metadata")
 		print("--keyword [name]\tParse filename for special phrases to add to album name, e.g. \"OST\", \"Live concert\"")
 		print("\t\t\tCan be used multiple times to look for different key phrases")
@@ -60,8 +60,8 @@ if __name__ == '__main__':
 			actions[2] = 1
 		elif arg=='-m' or arg=='--meta':
 			actions[3] = 1
-		elif arg=='-r' or arg=='--remove':
-			remove = 1
+		elif arg=='-r' or arg=='--no-remove':
+			remove = 0
 		elif arg=='-i':
 			n=n+1
 			try:
@@ -76,8 +76,8 @@ if __name__ == '__main__':
 				print("Directory not specified for -t")
 		elif arg=='--no-artist':
 			default_artist_flag = 0
-		elif arg=='--no-overwrite':
-			overwrite = 0
+		elif arg=='--overwrite':
+			overwrite = 1
 		elif arg=='--default':
 			n=n+1
 			try:
