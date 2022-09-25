@@ -10,6 +10,7 @@ extra = ''
 
 #Various logics flags
 actions = [0,0,0,0]
+print_flag = 0
 default_artist_flag = 1
 default_album_flag = 1
 remove = 0
@@ -51,6 +52,7 @@ if __name__ == '__main__':
 		if arg=='-h' or arg=='--help': print_help()
 		elif arg=='-l' or arg=='--list':
 			actions[0] = 1
+			print_flag = 1
 		elif arg=='-d' or arg=='--download':
 			actions[0] = 1
 			actions[1] = 1
@@ -103,13 +105,16 @@ if __name__ == '__main__':
 			print("Unrecognised option:",arg)
 	
 	#If no specific action is chosen, all are done in sequence
-	if sum(actions) == 0: actions = [1,1,1,1]
+	if sum(actions) == 0: 
+		actions = [1,1,1,1]
+		print_flag = 1
 	
 	#Get and list valid mp3 files
 	if actions[0]:
 		artist_list, artist_value = parsefiles.list(path_mp3, default_artist, key_phrase=keyword)
-		for n in range(0,len(artist_list)):
-			print(str(artist_list[n]) + ': ' + str(artist_value[n]))
+		if print_flag:
+			for n in range(0,len(artist_list)):
+				print(str(artist_list[n]) + ': ' + str(artist_value[n]))
 			
 	#Download images 
 	if actions[1]:
@@ -117,7 +122,7 @@ if __name__ == '__main__':
 		if not os.path.exists(path_image):
 			os.makedirs(path_image)
 		#Don't download new images if there's already valid ones
-		elif not overwrite:
+		if not overwrite:
 			for image in os.listdir(path_image):
 				try: artist_list.remove(image[:-4])
 				except: {}

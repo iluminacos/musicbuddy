@@ -161,6 +161,10 @@ def list(path, default_artist, key_phrase=None):
 		
 		#Adjust info obtained from filename to look up relevant information
 		artist = gen_artist(artist, album, default_artist)
+						
+		#Selenium behaves oddly when trying to save files with the same name but different capitalisation
+		#Since capitalisation shouldn't affect search quality, we make all searches lowercase to avoid unnecessary searches
+		artist = artist.lower()
 			
 		#Update artists already in the list
 		try:

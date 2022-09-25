@@ -5,7 +5,9 @@ import sys, time
 import chromedriver_autoinstaller
 
 timeout = 3.0
-max_timeout = 5
+#Image results begin at the 2nd div, check google images html
+first_result = 2
+max_timeout = 5  
 
 #TODO: Hide browser window and add a progress report instead
 #Syntax formatting sample - '{:>30}'.format('sample text') /// print("\r"+str(n), end='')
@@ -36,37 +38,45 @@ def init_setup():
 	
 	return driver
 
-#Download image that tries to download further results if the first image takes more than timeout seconds to load
-#TODO: Get this working. Current setup cannot fetch big images after checking any result other than the first one
-'''
 #Makes a query to google images and downloads the first image
-def download_image(driver, query, path):
-	
-	search(driver, query)
-	
-	n = 1
-	last_time = time.time() - timeout
+def download_image(driver, query, path, extra=''):
+
+	search(driver, query+extra)
+		
+	last_n = 0
+	n = first_result
+	last_time = time.time()
+
 	while 1:
-		if n > max_timeout: 
-			print("Couldn't load any image for",int(timeout*max_timeout),"seconds, check your connection then try again")
-			sys.exit(-1)
-		if time.time()-last_time > timeout:
+		#If an image takes too long to load, try to load another one
+		if time.time()-last_time >= timeout:
 			last_time=time.time()
 			n += 1
+		#Abort execution if it takes too long to get a viable image
+		if n >= first_result + max_timeout: 
+			print("Couldn't load any image for",int(timeout*max_timeout),"seconds, check your connection then try again")
+			driver.close()
+			sys.exit(-1)
+		#Try to load a new image after the query, then every time a timeout occurs
+		if n > last_n:
+			last_n = n
 			#This clicks the nth available image in the results. Every timeout seconds, if the image hasn't loaded, we try the next result
 			click_target = 'div.isv-r:nth-child('+str(n)+')'
+
 			driver.find_element(By.CSS_SELECTOR, click_target).click()
-		
 			#Fetch the big image after clicking the first result
-			img = driver.find_element(By.CSS_SELECTOR, 'div a img.n3VNCb')
+			xpath = '//*[@id="Sva75c"]/div/div/div[3]/div[2]/c-wiz/div/div[1]/div[1]/div[3]/div/a/img'
+			img = driver.find_element(By.XPATH, xpath)
 			
 			#Remove image overlay to get a clear screenshot
-			element = driver.find_element(By.CSS_SELECTOR, 'a.hm60ue')
+			xpath = '//*[@id="Sva75c"]/div/div/div[2]/a'
+			element = driver.find_element(By.XPATH, xpath)
 			driver.execute_script("""
 				var element = arguments[0];
 				element.parentNode.removeChild(element);
 				""", element)
-			element = driver.find_element(By.CSS_SELECTOR, 'div.mWagE')
+			xpath = '//*[@id="Sva75c"]/div/div/div[3]/div[2]/c-wiz/div/div[1]/div[1]/div[1]'
+			element = driver.find_element(By.XPATH, xpath)
 			driver.execute_script("""
 				var element = arguments[0];
 				element.parentNode.removeChild(element);
@@ -76,52 +86,18 @@ def download_image(driver, query, path):
 			#I don't know much javascript, so changing an attribute of the element seemed an innocuous enough method of passing information back to python
 			driver.execute_script("""
 				var img = arguments[0];
-				img.onload = function() { img.jsname="DONEDONEHASH"; }
+				if (img.complete && img.naturalHeight !== 0) {
+					img.alt="KEYWORDKEYWORDKEYWORD";
+				}
+				else {
+					img.onload = function() { img.alt="KEYWORDKEYWORDKEYWORD"; }
+				}
 				""", img)
-		try:
-			if img.get_attribute("jsname")=="DONEDONEHASH": break
-		except:
-			{}
 		
-	#Finally, save the image. Screenshots are both convenient and provide similar filesizes
-	filename = path + query + ".png"
-	img.screenshot(filename)
-'''
-
-#Makes a query to google images and downloads the first image
-def download_image(driver, query, path, extra=''):
-
-	search(driver, query+extra)
-	
-	#Click the first result
-	driver.find_element(By.CSS_SELECTOR, 'div.isv-r:nth-child(2)').click()
-
-	#Fetch the big image that pops up on a sidebar
-	img = driver.find_element(By.CSS_SELECTOR, 'div a img.n3VNCb')
-	
-	#Remove image overlay to get a clear screenshot
-	element = driver.find_element(By.CSS_SELECTOR, 'a.hm60ue')
-	driver.execute_script("""
-		var element = arguments[0];
-		element.parentNode.removeChild(element);
-		""", element)
-	element = driver.find_element(By.CSS_SELECTOR, 'div.mWagE')
-	driver.execute_script("""
-		var element = arguments[0];
-		element.parentNode.removeChild(element);
-		""", element)
-	
-	#Set up an event to know when the image is done loaded
-	#We use one of the attributes as an innocuous way of passing information between javascript and python
-	driver.execute_script("""
-		var img = arguments[0];
-		img.onload = function() { img.jsname="DONEDONEHASH"; }
-		""", img)
-	
-	while img.get_attribute("jsname")!="DONEDONEHASH": {}
-		
-	#Finally, save the image. Screenshots are both convenient and provide consistent filesizes
-	filename = path + query + ".png"
+		#We know the image is loaded if the attribute changes
+		if img.get_attribute("alt") == 'KEYWORDKEYWORDKEYWORD': break
+				
+	filename = filename = path + query + ".png"
 	img.screenshot(filename)
 
 def download_batch(artist_list, path, extra):
