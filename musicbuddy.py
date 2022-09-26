@@ -18,6 +18,7 @@ rename = 1
 overwrite = 0
 keyword = []
 
+#TODO: Add function to check similar band names
 def print_help():
 		print("Unless actions are specified, the script will perform all actions in sequence in the current directory.")
 		print("Help:")

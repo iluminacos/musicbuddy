@@ -9,10 +9,7 @@ timeout = 3.0
 first_result = 2
 max_timeout = 5  
 
-#TODO: Hide browser window and add a progress report instead
-#Syntax formatting sample - '{:>30}'.format('sample text') /// print("\r"+str(n), end='')
-
-#TODO: Hide unprompted 'usb error' selenium print
+#TODO: Test google images API vs selenium scrape
 
 #When in google images, makes a new image query
 def search(driver, query):
@@ -30,7 +27,12 @@ def init_setup():
 	#Not much experience with selenium, this seems necessary
 	chromedriver_autoinstaller.install()
 		
-	driver = webdriver.Chrome()
+	options = webdriver.chrome.options.Options()
+	#This hides the browser
+	options.headless = True
+	#This hides selenium's console output, except for fatal errors
+	options.add_argument("--log-level=3")
+	driver = webdriver.Chrome(options=options)
 	driver.get('https://images.google.com/')
 
 	#Selenium doesn't use cookies by default, so we have to handle the popup every new session
@@ -103,7 +105,21 @@ def download_image(driver, query, path, extra=''):
 def download_batch(artist_list, path, extra):
 	driver = init_setup()
 	
+	#Data for the print
+	length = len(artist_list)
+	n = 0
+	last_len = 0
+	filler = 0
+	
 	for artist in artist_list:
+	
+		#Status update message
+		n+=1
+		message = "Image "+str(n)+'/'+str(length)+' - '+artist
+		filler = max(last_len - len(message), 0)
+		print(message, ' '*filler, end='\r', sep='', flush=True)
+		last_len = len(message)
+	
 		#At this point, info is formatted like "Artist[ - Album]". Content between brackets is optional
 		if len(artist.split(' - '))==1: 
 			download_image(driver, artist, path, extra=extra)
