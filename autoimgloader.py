@@ -6,6 +6,8 @@ import chromedriver_autoinstaller
 
 #TODO: Test google images API vs selenium scrape
 
+max_attempts = 5
+
 #When in google images, makes a new image query
 def search(driver, query):
 	#Click search bar
@@ -39,25 +41,33 @@ def init_setup():
 def download_image(driver, query, path, extra=''):
 
 	search(driver, query+extra)
-
-	#This clicks the nth available image in the results. Every timeout seconds, if the image hasn't loaded, we try the next result
-	click_target = 'div.isv-r:nth-child(2)'
-
-	driver.find_element(By.CSS_SELECTOR, click_target).click()
-	#Fetch the big image after clicking the first result
-	xpath = '//*[@id="Sva75c"]/div/div/div[3]/div[2]/c-wiz/div/div[1]/div[1]/div[3]/div/a/img'
-	img = driver.find_element(By.XPATH, xpath)
 	
-	src = img.get_attribute('src')
+	#Results begin at the second div
+	n=2
+	while n<2+max_attempts:
+		#This clicks the nth available image in the results. Every timeout seconds, if the image hasn't loaded, we try the next result
+		click_target = 'div.isv-r:nth-child('+str(n)+')'
 
-	#Loaded images should have a proper url, all preloaded image sources begin with "data:image/"
-	while src[0:11] == 'data:image/':
+		driver.find_element(By.CSS_SELECTOR, click_target).click()
+		#Fetch the big image after clicking the first result
+		xpath = '//*[@id="Sva75c"]/div/div/div[3]/div[2]/c-wiz/div/div[1]/div[1]/div[3]/div/a/img'
+		img = driver.find_element(By.XPATH, xpath)
+		
 		src = img.get_attribute('src')
 
-	# download the image
-	filename = filename = path + query + ".png"
-	urllib.request.urlretrieve(src, filename)
-
+		#Loaded images should have a proper url, all preloaded image sources begin with "data:image/"
+		while src[0:11] == 'data:image/':
+			src = img.get_attribute('src')
+		
+		#To handle protocol errors
+		try:
+			#Download the image
+			filename = filename = path + query + ".png"
+			urllib.request.urlretrieve(src, filename)
+			return 0;
+		except: n+=1
+	print('Skipping','"'+query+extra+'": Couldn\'t download any image in',n,'attempts')
+		
 def download_batch(artist_list, path, extra):
 	driver = init_setup()
 	
