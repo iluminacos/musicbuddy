@@ -51,7 +51,7 @@ def gen_artist(artist, album, default_artist):
 		artist = default_artist
 	#For named artists, add the name of the album, if any
 	else: 
-		try: artist = artist + ' ' + album
+		try: artist = artist + ' - ' + album
 		except: {}
 		
 	return artist
