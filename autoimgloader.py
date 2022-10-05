@@ -1,13 +1,8 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
-import sys, time
+import sys, urllib
 import chromedriver_autoinstaller
-
-timeout = 3.0
-#Image results begin at the 2nd div, check google images html
-first_result = 2
-max_timeout = 5  
 
 #TODO: Test google images API vs selenium scrape
 
@@ -44,63 +39,24 @@ def init_setup():
 def download_image(driver, query, path, extra=''):
 
 	search(driver, query+extra)
-		
-	last_n = 0
-	n = first_result
-	last_time = time.time()
 
-	while 1:
-		#If an image takes too long to load, try to load another one
-		if time.time()-last_time >= timeout:
-			last_time=time.time()
-			n += 1
-		#Abort execution if it takes too long to get a viable image
-		if n >= first_result + max_timeout: 
-			print("Couldn't load any image for",int(timeout*max_timeout),"seconds, check your connection then try again")
-			driver.close()
-			sys.exit(-1)
-		#Try to load a new image after the query, then every time a timeout occurs
-		if n > last_n:
-			last_n = n
-			#This clicks the nth available image in the results. Every timeout seconds, if the image hasn't loaded, we try the next result
-			click_target = 'div.isv-r:nth-child('+str(n)+')'
+	#This clicks the nth available image in the results. Every timeout seconds, if the image hasn't loaded, we try the next result
+	click_target = 'div.isv-r:nth-child(2)'
 
-			driver.find_element(By.CSS_SELECTOR, click_target).click()
-			#Fetch the big image after clicking the first result
-			xpath = '//*[@id="Sva75c"]/div/div/div[3]/div[2]/c-wiz/div/div[1]/div[1]/div[3]/div/a/img'
-			img = driver.find_element(By.XPATH, xpath)
-			
-			#Remove image overlay to get a clear screenshot
-			xpath = '//*[@id="Sva75c"]/div/div/div[2]/a'
-			element = driver.find_element(By.XPATH, xpath)
-			driver.execute_script("""
-				var element = arguments[0];
-				element.parentNode.removeChild(element);
-				""", element)
-			xpath = '//*[@id="Sva75c"]/div/div/div[3]/div[2]/c-wiz/div/div[1]/div[1]/div[1]'
-			element = driver.find_element(By.XPATH, xpath)
-			driver.execute_script("""
-				var element = arguments[0];
-				element.parentNode.removeChild(element);
-				""", element)
-				
-			#Set up an event to know when the image is done loaded
-			#I don't know much javascript, so changing an attribute of the element seemed an innocuous enough method of passing information back to python
-			driver.execute_script("""
-				var img = arguments[0];
-				if (img.complete && img.naturalHeight !== 0) {
-					img.alt="KEYWORDKEYWORDKEYWORD";
-				}
-				else {
-					img.onload = function() { img.alt="KEYWORDKEYWORDKEYWORD"; }
-				}
-				""", img)
-		
-		#We know the image is loaded if the attribute changes
-		if img.get_attribute("alt") == 'KEYWORDKEYWORDKEYWORD': break
-				
+	driver.find_element(By.CSS_SELECTOR, click_target).click()
+	#Fetch the big image after clicking the first result
+	xpath = '//*[@id="Sva75c"]/div/div/div[3]/div[2]/c-wiz/div/div[1]/div[1]/div[3]/div/a/img'
+	img = driver.find_element(By.XPATH, xpath)
+	
+	src = img.get_attribute('src')
+
+	#Loaded images should have a proper url, all preloaded image sources begin with "data:image/"
+	while src[0:11] == 'data:image/':
+		src = img.get_attribute('src')
+
+	# download the image
 	filename = filename = path + query + ".png"
-	img.screenshot(filename)
+	urllib.request.urlretrieve(src, filename)
 
 def download_batch(artist_list, path, extra):
 	driver = init_setup()
