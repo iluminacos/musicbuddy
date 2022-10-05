@@ -1,12 +1,13 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
-import sys, urllib
+import sys, urllib, time
 import chromedriver_autoinstaller
 
 #TODO: Test google images API vs selenium scrape
 
 max_attempts = 5
+max_timeout = 3
 
 #When in google images, makes a new image query
 def search(driver, query):
@@ -45,6 +46,7 @@ def download_image(driver, query, path, extra=''):
 	#Results begin at the second div
 	n=2
 	while n<2+max_attempts:
+		flag = 0
 		#This clicks the nth available image in the results. Every timeout seconds, if the image hasn't loaded, we try the next result
 		click_target = 'div.isv-r:nth-child('+str(n)+')'
 
@@ -56,8 +58,16 @@ def download_image(driver, query, path, extra=''):
 		src = img.get_attribute('src')
 
 		#Loaded images should have a proper url, all preloaded image sources begin with "data:image/"
+		time_init = time.time()
 		while src[0:11] == 'data:image/':
+			#Check maximum wait time for an appropriate URL
+			time_now = time.time()
 			src = img.get_attribute('src')
+			if time_now - time_init > max_timeout:
+				flag = 1
+				n += 1
+				break
+		if flag: continue
 		
 		#To handle protocol errors
 		try:
