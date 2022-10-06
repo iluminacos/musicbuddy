@@ -1,3 +1,7 @@
+# A word of caution! 
+When I uploaded the software I only tested the eyed3 part with a few select files. After testing bigger batches, I've come to the conclusion that not all mp3 files are equal, and in fact the current implementation barely seems to work with the bigger part of my collection. If you still want to use this script, I **strongly** suggest you use the --no-rename function, so as to not lose information for files with unsuitable meta tags. To be fair, renaming the files to only the song name was a naive idea on my part to begin with, since it's perfectly possible for many files to share the same name. 
+I'd also suggest adding try-except blocks to the code that handles meta tags in parsefiles.py, since the code will cease execution if it encounters any unsuitable file.
+
 ## Overview
 If you don't rely on streaming services to listen to music then chances are you (much like me) have an unmanageable amount of uncategorised mp3 files in your devices.  
 This project aims to make these kind of collections more application friendly by automatically filling out the most relevant metadata tags: Song title, artist name, album name, and album art.  
